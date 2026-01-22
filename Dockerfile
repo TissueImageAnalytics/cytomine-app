@@ -1,20 +1,16 @@
-FROM cytomine/software-python3-base:v2.3.1
-
-# Create the directories
-RUN mkdir -p app/
+FROM python:3.10.14-slim-bullseye
 
 RUN apt-get update
-RUN apt-get install ffmpeg libsm6 libxext6  -y
+RUN apt-get install ffmpeg libsm6 libxext6 -y
 RUN apt-get -y install libopenjp2-7-dev libopenjp2-tools openslide-tools
 
-# Install tiatoolbox and pytorch and its dependencies
+# Install tiatoolbox, pytorch, and dependencies
 COPY requirements.txt /tmp/
-RUN pip3 install -r /tmp/requirements.txt
+RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
 
-# Install scripts
-COPY descriptor.json /app/descriptor.json
-COPY run.py /app/run.py
-# COPY CMU-1-Small-Region.svs /app/CMU-1-Small-Region.svs
+WORKDIR /app
 
-ENTRYPOINT ["python3", "/app/run.py"]
-# ENTRYPOINT ["/bin/bash"]
+COPY ./scripts/run.py /app/run.py
+
+ENTRYPOINT ["python", "run.py"]
+
