@@ -10,7 +10,9 @@ RUN pip3 install --no-cache-dir -r /tmp/requirements.txt
 
 WORKDIR /app
 
+COPY ./models/ /models
 COPY ./scripts/run.py /app/run.py
 
 ENTRYPOINT ["python", "run.py"]
+
 

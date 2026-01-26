@@ -40,6 +40,7 @@ __author__ = "Gozde Gunesli <gozde.gunesli@warwick.ac.uk> and Mostafa Jahanifar 
 
 INPUT_DIR = "/inputs"
 OUTPUT_DIR = "/outputs"
+MODEL_DATA_DIR = "/models"
 CACHE_DIR = "/temp" # to save temp files e.g., model outputs and input copy
 
 
@@ -102,11 +103,15 @@ def to_geojson_string(coords):
 
 def main():
     os.makedirs(CACHE_DIR, exist_ok=True)
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+    # HoVerNet model selection
     hovernet_model = read_parameter(os.path.join(INPUT_DIR, "hovernet_model"), cast_fn=str, default="hovernet_fast-pannuke")
-    src_image_path = os.path.join(INPUT_DIR, "image")
+    assert hovernet_model in ["hovernet_fast-pannuke", "hovernet_fast-monusac", "hovernet_original-consep", "hovernet_original_kumar"], f"Unsupported HoVerNet model: {hovernet_model}"
+    hovernet_weights_path = f"{MODEL_DATA_DIR}/{hovernet_model}.pth"
     
-    # get image info
+    # get input image info
+    src_image_path = os.path.join(INPUT_DIR, "image")
     image = imread(src_image_path)
     image_height = image.shape[0]
     print(f"Input image height: {image_height}")
@@ -120,6 +125,7 @@ def main():
     # Use TIAToolbox nucleus instance segmentor engine for HoVerNet model
     inst_segmentor = NucleusInstanceSegmentor(
         pretrained_model=hovernet_model,
+        pretrained_weights=hovernet_weights_path,
         num_loader_workers=0,
         num_postproc_workers=0,
         batch_size=2,
