@@ -1,6 +1,6 @@
 name: HoVerNet Nuclei
 name_short: hovernet
-version: 0.2.1
+version: 0.2.2
 namespace: com.cytomine.nuclei.segmentation.hovernet
 $schema: https://raw.githubusercontent.com/cytomine/cytomine/refs/heads/main/app-engine/src/main/resources/schemas/tasks/task.v0.json
 
@@ -20,15 +20,15 @@ configuration:
   input_folder: /inputs
   output_folder: /outputs
   image:
-    file: /com.cytomine.nuclei.segmentation.hovernet-0.2.1.tar
+    file: /com.cytomine.nuclei.segmentation.hovernet-0.2.2.tar
 
 inputs:
   image:
     display_name: Input image
     type:
       id: image
-      max_width: 4000
-      max_height: 4000
+      max_width: 10000
+      max_height: 10000
     description: The input image in which nuclei should be detected
 
   hovernet_model:

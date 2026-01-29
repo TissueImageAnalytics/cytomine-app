@@ -25,7 +25,8 @@ import os
 import shutil
 import torch 
 import joblib
-from shapely import wkt
+import shapely
+from shapely.geometry import Polygon, Point
 
 # sys.path.append('/home/adams/Projects/tiatoolbox_local/tiatoolbox/')
 from tiatoolbox.models.engine.nucleus_instance_segmentor import NucleusInstanceSegmentor
@@ -93,12 +94,30 @@ def write_array(array_path: str, array_data: Iterable[Any], format_fn: Callable[
     with open(os.path.join(array_path, f"{i}"), "w+", encoding="utf8") as file:
       file.write(format_fn(data_item))
 
+def flatten(_polygon):
+    if not hasattr(_polygon, "geoms"):
+        return [_polygon]
+    _out = []
+    for geom in _polygon.geoms:
+       _out.extend(flatten(geom))
+    return _out
 
 # Convert coordinates to geojson Polygon string
-def to_geojson_string(coords):
-    # Close the polygon
-    coords.append(coords[0])
-    return geojson.dumps(geojson.Polygon([coords], validate=True)) 
+def to_geojson_string(points):
+  
+    points.append(points[0]) # Close the polygon
+
+    poly = Polygon(points)
+    # flatten MultiPolygons
+    poly = flatten(poly)
+
+    # Convert to GeoJSON string
+    geojson_str = shapely.to_geojson(poly)
+
+    return str(geojson_str)  # Return the GeoJSON string directly
+
+
+
 
 
 def main():
@@ -164,17 +183,25 @@ def main():
 
     # Collect coordinates per cell type and adjust to Cytomine coordinate system
     coordinates = {type:[] for type in CELL_ID_DICT.values()}
-    for nucleus in tile_preds:
-        contours = tile_preds[nucleus]['contour']
+    for nucleus in tile_preds:    
         nuc_type = tile_preds[nucleus]['type']
         if nuc_type in CELL_ID_DICT.keys(): # skip background "0"
-          coordinates[CELL_ID_DICT[nuc_type]].append([[float(minx + point[0]), float(miny - point[1])] for point in contours]) # Flip Y coordinates for Cytomine, ensure float type for geojson compatibility
-    
+          points = list()
+          contours = tile_preds[nucleus]['contour']
+  
+          for i in range(len(contours)):
+             # Cytomine cartesian coordinate system, (0,0) is bottom left corner
+              p = Point(minx + contours[i][0], miny - contours[i][1]) 
+              points.append(p)
+                 
+          coordinates[CELL_ID_DICT[nuc_type]].append(points) 
+
+
     # Write outputs per cell type
-    for cell_type, coords in coordinates.items():
+    for cell_type, points in coordinates.items():
         write_array(
             array_path=os.path.join(OUTPUT_DIR, cell_type),
-            array_data=coords,
+            array_data=points,
             format_fn=to_geojson_string
         )
 
