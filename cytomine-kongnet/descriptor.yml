@@ -1,6 +1,6 @@
 name: KongNet Nuclei Detection
 name_short: kongnet
-version: 0.1.0
+version: 0.1.1
 namespace: com.cytomine.nuclei.detection.kongnet
 $schema: https://raw.githubusercontent.com/cytomine/cytomine/refs/heads/main/app-engine/src/main/resources/schemas/tasks/task.v0.json
 
@@ -20,7 +20,10 @@ configuration:
   input_folder: /inputs
   output_folder: /outputs
   image:
-    file: /com.cytomine.nuclei.detection.kongnet-0.1.0.tar
+    file: /com.cytomine.nuclei.detection.kongnet-0.1.1.tar
+  resources:
+    ram: 12Gi
+    cpus: 2
 
 inputs:
   image:
