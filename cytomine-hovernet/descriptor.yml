@@ -1,6 +1,6 @@
 name: HoVerNet Nuclei
 name_short: hovernet
-version: 0.2.2
+version: 0.2.8
 namespace: com.cytomine.nuclei.segmentation.hovernet
 $schema: https://raw.githubusercontent.com/cytomine/cytomine/refs/heads/main/app-engine/src/main/resources/schemas/tasks/task.v0.json
 
@@ -20,24 +20,18 @@ configuration:
   input_folder: /inputs
   output_folder: /outputs
   image:
-    file: /com.cytomine.nuclei.segmentation.hovernet-0.2.2.tar
+    file: /com.cytomine.nuclei.segmentation.hovernet-0.2.8.tar
 
 inputs:
   image:
     display_name: Input image
-    type:
-      id: image
-      max_width: 10000
-      max_height: 10000
     description: The input image in which nuclei should be detected
-
-  hovernet_model:
-    display_name: HoVerNet model
-    type: string
-    description: The HoVer-Net model to be used. Options here include hovernet_fast-pannuke, hovernet_fast-monusac, hovernet_original-consep, hovernet_original_kumar.
-    optional: true
-    default: hovernet_fast-pannuke  
-
+    type:
+      id: array
+      subtype:
+        id: image
+        max_width: 10000
+        max_height: 10000
 
 outputs:
   nuclei_neo:
@@ -45,7 +39,7 @@ outputs:
     description: The segmented nuclei of type Neoplastic Epithelial encoded as geometries
     type:
       id: array
-      subtype: 
+      subtype:
         id: geometry
 
   nuclei_inf:
@@ -53,7 +47,7 @@ outputs:
     description: The segmented nuclei of type Inflammatory encoded as geometries
     type:
       id: array
-      subtype: 
+      subtype:
         id: geometry
 
   nuclei_con:
@@ -61,7 +55,7 @@ outputs:
     description: The segmented nuclei of type Connective encoded as geometries
     type:
       id: array
-      subtype: 
+      subtype:
         id: geometry
 
   nuclei_dead:
@@ -69,7 +63,7 @@ outputs:
     description: The segmented nuclei of type Dead encoded as geometries
     type:
       id: array
-      subtype: 
+      subtype:
         id: geometry
 
   nuclei_nnepi:
@@ -77,6 +71,5 @@ outputs:
     description: The segmented nuclei of type Non-Neoplastic Epithelial encoded as geometries
     type:
       id: array
-      subtype: 
+      subtype:
         id: geometry
-

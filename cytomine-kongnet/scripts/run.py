@@ -20,15 +20,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import logging
-import numpy as np
 import sys
 import os
 import shutil
 import torch
-from pathlib import Path
-from shapely.geometry import Polygon
 
-from tiatoolbox.models.engine.multi_task_segmentor import MultiTaskSegmentor
+from tiatoolbox.models.engine.nucleus_detector import NucleusDetector
 
 from typing import Any, Callable, Iterable
 import geojson
@@ -37,7 +34,7 @@ import yaml
 from imageio import imread
 import imghdr
 
-__author__ = "Gozde Gunesli <gozde.gunesli@warwick.ac.uk> and Mostafa Jahanifar <mostafa.jahanifar@warwick.ac.uk> and Adam Shephard <adam.shephard@warwick.ac.uk>"
+__author__ = "Gozde Gunesli <gozde.gunesli@warwick.ac.uk>"
 
 logger = logging.getLogger(__name__)
 
@@ -96,54 +93,21 @@ def write_array(array_path: str, array_data: Iterable[Any], format_fn: Callable[
             file.write(format_fn(data_item))
 
 
-def to_geojson_string(poly_coords):
-    """Convert a list of (x, y) coordinate tuples to a GeoJSON Polygon string."""
-    return geojson.dumps(geojson.Polygon(poly_coords))
-
-
-def contour_output_to_valid_poly_coords(contour, minx, miny):
-    """Fix contour coordinates - adjust coordinate system & convert to to a valid polygon geometry."""
-
-    if len(contour) < 3:
-        return None
-    
-    # Cytomine cartesian coordinate system, (0,0) is bottom left co
-    coords = [(float(minx + c[0]), float(miny - c[1])) for c in contour]
-
-    if coords[0] != coords[-1]:
-        coords.append(coords[0])  # ensure ring is closed
-    
-    poly = Polygon(coords)
-
-    if not poly.is_valid:
-        poly = poly.buffer(0) 
-        logger.info("Polygon fixed with buffer(0).")
-
-    if poly.geom_type == "MultiPolygon":
-        poly = max(poly.geoms, key=lambda p: p.area)  # keep largest fragment
-        logger.info("MultiPolygon fixed.")
-
-    if not poly.is_valid or poly.is_empty:
-        logger.info("Polygon could not be fixed and will be skipped.")
-        poly = None
-
-    if poly:
-        return list(poly.exterior.coords)
-    else:
-        return None
+def to_geojson_point_string(xy):
+    """Convert an (x, y) coordinate pair to a GeoJSON Point string."""
+    return geojson.dumps(geojson.Point((float(xy[0]), float(xy[1]))))
 
 
 def main():
     os.makedirs(CACHE_DIR, exist_ok=True)
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-    # HoVerNet model selection
-    hovernet_model = read_parameter(os.path.join(INPUT_DIR, "hovernet_model"), cast_fn=str, default="hovernet_fast-pannuke")
-    assert hovernet_model in ["hovernet_fast-pannuke", "hovernet_fast-monusac", "hovernet_original-consep", "hovernet_original_kumar"], f"Unsupported HoVerNet model: {hovernet_model}"
-    hovernet_weights_path = f"{MODEL_DATA_DIR}/{hovernet_model}.pth"
+    # KongNet model and weights path
+    kongnet_model = "KongNet_MONKEY_1"
+    kongnet_weights_path = f"{MODEL_DATA_DIR}/{kongnet_model}.pth"
 
     # get input image info
-    src_image_path = os.path.join(INPUT_DIR, "image")
+    src_image_path = os.path.join(INPUT_DIR, "image", "0")  # index 0 of the array input
     image = imread(src_image_path)
     image_height = image.shape[0]
     logger.info(f"Input image height: {image_height}")
@@ -154,69 +118,68 @@ def main():
     image_path = os.path.join(CACHE_DIR, "input_image" + file_ext)
     shutil.copyfile(src_image_path, image_path)
 
-    # Cell ID dict
-    CELL_ID_DICT = {  # 0: "background" is ignored
-        1: "nuclei_neo",
-        2: "nuclei_inf",
-        3: "nuclei_con",
-        4: "nuclei_dead",
-        5: "nuclei_nnepi",
+    # Cell ID dict (KongNet_MONKEY_1 class_dict from tiatoolbox pretrained registry:
+    # 0: Overall_Inflammatory, 1: Lymphocyte, 2: Monocyte).
+    # Only class 0 (the combined inflammatory superset) is used.
+    CELL_ID_DICT = {
+        0: "inflammatory_cells",
     }
 
     # Set device
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-    # Use TIAToolbox MultiTaskSegmentor for HoVerNet model
-    segmentor = MultiTaskSegmentor(
-        model=hovernet_model,
-        weights=hovernet_weights_path,
+    # Use TIAToolbox NucleusDetector for KongNet model
+    detector = NucleusDetector(
+        model=kongnet_model,
+        weights=kongnet_weights_path,
         num_workers=0,
-        batch_size=2,
+        batch_size=8,
         device=device,
     )
 
     # Remove previous cache results if exists
-    save_dir = os.path.join(CACHE_DIR, "hovernet_results")
+    save_dir = os.path.join(CACHE_DIR, "kongnet_results")
     if os.path.isdir(save_dir):
         shutil.rmtree(save_dir)
 
-    output = segmentor.run(
+    output = detector.run(
         images=[image_path],
         save_dir=save_dir,
-        patch_mode=False, 
+        patch_mode=False,
         output_type="zarr",
         overwrite=True,
-        wsireader_kwargs={"mpp": 0.25},  # some (PNG) has no MPP metadata, HoVerNet models train at 0.25 mpp (40x)
+        wsireader_kwargs={"mpp": 0.25},  # some (PNG) has no MPP metadata, KongNet models train at 0.25 mpp (40x)
     )
 
     # Open zarr store (one image processed, take the single result)
-    store_path = list(output.values())[0] #output[image_path]
-    nuc_seg = zarr.open(store_path, mode="r")
-    logger.info(f"Output keys: {list(nuc_seg.keys())}")  
+    # KongNet NucleusDetector stores per-detection: classes, x, y (parallel 1-D arrays)
+    store_path = list(output.values())[0]
+    nuc_det = zarr.open(store_path, mode="r")
+    logger.info(f"Output keys: {list(nuc_det.keys())}")
 
-    n_nuclei = len(nuc_seg["type"])
+    classes = nuc_det["classes"]
+    xs = nuc_det["x"]
+    ys = nuc_det["y"]
+    n_nuclei = len(classes)
     logger.info(f"Number of detected nuclei: {n_nuclei}")
-
 
     # Collect coordinates per cell type and adjust to Cytomine coordinate system
     # Cytomine uses cartesian coords with (0,0) at bottom-left, so y is flipped
-    minx, miny = 0, image_height
     coordinates = {t: [] for t in CELL_ID_DICT.values()}
 
     for i in range(n_nuclei):
-        nuc_type = int(nuc_seg["type"][i])
+        nuc_type = int(classes[i])
         if nuc_type in CELL_ID_DICT:
-            contour = np.array(nuc_seg["contours"][i])  # shape [N_pts, 2], columns are [x, y]
-            points = contour_output_to_valid_poly_coords(contour, minx, miny)
-            if points:
-                coordinates[CELL_ID_DICT[nuc_type]].append(points)
+            x_cyt = float(xs[i])
+            y_cyt = float(image_height - ys[i])
+            coordinates[CELL_ID_DICT[nuc_type]].append((x_cyt, y_cyt))
 
     # Write outputs per cell type
     for cell_type, points in coordinates.items():
         write_array(
             array_path=os.path.join(OUTPUT_DIR, cell_type),
             array_data=points,
-            format_fn=to_geojson_string,
+            format_fn=to_geojson_point_string,
         )
 
 

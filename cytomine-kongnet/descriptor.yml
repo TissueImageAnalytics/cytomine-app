@@ -1,0 +1,43 @@
+name: KongNet Nuclei Detection
+name_short: kongnet
+version: 0.1.0
+namespace: com.cytomine.nuclei.detection.kongnet
+$schema: https://raw.githubusercontent.com/cytomine/cytomine/refs/heads/main/app-engine/src/main/resources/schemas/tasks/task.v0.json
+
+external:
+  dois:
+    - https://arxiv.org/abs/2510.23559
+  source_code: https://github.com/TissueImageAnalytics/tiatoolbox
+
+authors:
+  - first_name: Gozde
+    last_name: Gunesli
+    organization: TIA Centre University of Warwick
+    email: gozde.gunesli@warwick.ac.uk
+    is_contact: true
+
+configuration:
+  input_folder: /inputs
+  output_folder: /outputs
+  image:
+    file: /com.cytomine.nuclei.detection.kongnet-0.1.0.tar
+
+inputs:
+  image:
+    display_name: Input image
+    description: The input image in which nuclei should be detected
+    type:
+      id: array
+      subtype:
+        id: image
+        max_width: 10000
+        max_height: 10000
+
+outputs:
+  inflammatory_cells:
+    display_name: Inflammatory cell detections
+    description: Detected inflammatory cell nuclei (KongNet_MONKEY_1 "Overall_Inflammatory" class) encoded as point geometries
+    type:
+      id: array
+      subtype:
+        id: geometry
