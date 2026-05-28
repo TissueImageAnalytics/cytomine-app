@@ -1,0 +1,75 @@
+name: HoVerNet Nuclei
+name_short: hovernet
+version: 0.2.8
+namespace: com.cytomine.nuclei.segmentation.hovernet
+$schema: https://raw.githubusercontent.com/cytomine/cytomine/refs/heads/main/app-engine/src/main/resources/schemas/tasks/task.v0.json
+
+external:
+  dois:
+    - https://doi.org/10.1016/j.media.2019.101563
+  source_code: https://github.com/TissueImageAnalytics/tiatoolbox
+
+authors:
+  - first_name: Gozde
+    last_name: Gunesli
+    organization: TIA Centre University of Warwick
+    email: gozde.gunesli@warwick.ac.uk
+    is_contact: true
+
+configuration:
+  input_folder: /inputs
+  output_folder: /outputs
+  image:
+    file: /com.cytomine.nuclei.segmentation.hovernet-0.2.8.tar
+
+inputs:
+  image:
+    display_name: Input image
+    description: The input image in which nuclei should be detected
+    type:
+      id: array
+      subtype:
+        id: image
+        max_width: 10000
+        max_height: 10000
+
+outputs:
+  nuclei_neo:
+    display_name: Neoplastic epithelial cell nuclei geometries
+    description: The segmented nuclei of type Neoplastic Epithelial encoded as geometries
+    type:
+      id: array
+      subtype:
+        id: geometry
+
+  nuclei_inf:
+    display_name: Inflammatory cell nuclei geometries
+    description: The segmented nuclei of type Inflammatory encoded as geometries
+    type:
+      id: array
+      subtype:
+        id: geometry
+
+  nuclei_con:
+    display_name: Connective cell nuclei geometries
+    description: The segmented nuclei of type Connective encoded as geometries
+    type:
+      id: array
+      subtype:
+        id: geometry
+
+  nuclei_dead:
+    display_name: Dead cell nuclei geometries
+    description: The segmented nuclei of type Dead encoded as geometries
+    type:
+      id: array
+      subtype:
+        id: geometry
+
+  nuclei_nnepi:
+    display_name: Non-Neoplastic epithelial nuclei geometries
+    description: The segmented nuclei of type Non-Neoplastic Epithelial encoded as geometries
+    type:
+      id: array
+      subtype:
+        id: geometry

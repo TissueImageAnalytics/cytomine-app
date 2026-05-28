@@ -1,15 +1,17 @@
-# S_CellSegmentClassify_HoVerNet_ROI
+# TIA Centre Cytomine Apps
 
-Cytomine (https://cytomine.org) app developed by the TIA Centre team (https://warwick.ac.uk/fac/cross_fac/tia/) for Cell/Nuclei instance segmentation and classification in region of interests (ROIs),
-encapsulating the HoVer-Net code as part of TIAToolbox (https://github.com/TissueImageAnalytics/tiatoolbox) originally developed by Simon Graham et al. as published in Hover-Net: Simultaneous segmentation and classification of nuclei in multi-tissue histology images. Medical Image Analysis, 58, 2019.
+[Cytomine](https://cytomine.org) apps developed by the [TIA Centre](https://warwick.ac.uk/fac/cross_fac/tia/), University of Warwick.
 
-This implementation follows Cytomine (=v3.0) external app conventions based on container technology. 
-It applies a HoVer-Net pre-trained model (PanNuke) to Cytomine regions of interest within large whole-slide images. 
+This repository contains two apps, both wrapping pre-trained models from [TIAToolbox](https://github.com/TissueImageAnalytics/tiatoolbox):
 
-To launch such an analysis, a user first specify a Cytomine ROI annotation term identifier, a nuclei/cell term identifier, and a list of images where to apply the detector (see screenshot below). The app will then apply the algorithm to all Cytomine ROI annotations labeled by the user with this term, in the list of whole-slide images of the current project. Detected objects are labeled with the nuclei/cell term identifier.
+- **[cytomine-hovernet](cytomine-hovernet/)** — nucleus instance segmentation and classification with HoVer-Net, trained on the PanNuke dataset.
+- **[cytomine-kongnet](cytomine-kongnet/)** — nucleus detection with KongNet, trained on the MONKEY Challenge dataset.
 
-# HoVer-Net weights model
+See each app's README for model and reference details.
 
-HoVer-Net H&E model downloaded from the link given in https://github.com/vqdang/hover_net.
+## Pre-trained model weights
 
-# Example of HoVer-Net detections in Cytomine web viewer of a whole-slide image
+Weights are hosted on the [TIA Centre HuggingFace](https://huggingface.co/TIACentre):
+
+- HoVer-Net (PanNuke): [hovernet_fast-pannuke.pth](https://huggingface.co/TIACentre/TIAToolbox_pretrained_weights/resolve/main/hovernet_fast-pannuke.pth?download=true)
+- KongNet (MONKEY): [KongNet_MONKEY_1.pth](https://huggingface.co/TIACentre/KongNet_pretrained_weights/resolve/main/KongNet_MONKEY_1.pth?download=true)
