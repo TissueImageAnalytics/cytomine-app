@@ -1,6 +1,6 @@
 name: HoVerNet Nuclei
 name_short: hovernet
-version: 0.2.8
+version: 0.2.9
 namespace: com.cytomine.nuclei.segmentation.hovernet
 $schema: https://raw.githubusercontent.com/cytomine/cytomine/refs/heads/main/app-engine/src/main/resources/schemas/tasks/task.v0.json
 
@@ -20,7 +20,10 @@ configuration:
   input_folder: /inputs
   output_folder: /outputs
   image:
-    file: /com.cytomine.nuclei.segmentation.hovernet-0.2.8.tar
+    file: /com.cytomine.nuclei.segmentation.hovernet-0.2.9.tar
+  resources:
+    ram: 12Gi
+    cpus: 2
 
 inputs:
   image:
