@@ -1,0 +1,50 @@
+name: NuClick Nuclei Segmentation
+name_short: nuclick
+version: 0.1.2
+namespace: com.cytomine.nuclei.segmentation.interactive.nuclick
+$schema: https://raw.githubusercontent.com/cytomine/cytomine/refs/heads/main/app-engine/src/main/resources/schemas/tasks/task.v0.json
+
+external:
+  dois:
+    - https://doi.org/10.1016/j.media.2020.101771
+  source_code: https://github.com/TissueImageAnalytics/tiatoolbox
+
+authors:
+  - first_name: Gozde
+    last_name: Gunesli
+    organization: TIA Centre University of Warwick
+    email: gozde.gunesli@warwick.ac.uk
+    is_contact: true
+
+configuration:
+  input_folder: /inputs
+  output_folder: /outputs
+  image:
+    file: /com.cytomine.nuclei.segmentation.interactive.nuclick-0.1.2.tar
+  resources:
+    ram: 8Gi
+    cpus: 2
+
+inputs:
+  image:
+    display_name: Input image
+    description: The input image (PNG/JPG/TIFF) containing nuclei to be segmented. WSI formats are not supported; export a region from the WSI viewer first.
+    type:
+      id: image
+      max_width: 10000
+      max_height: 10000
+
+  point:
+    display_name: Click point
+    description: A single point geometry (click) on the nucleus to segment
+    type:
+      id: geometry
+
+outputs:
+  nuclei:
+    display_name: Segmented nuclei
+    description: Per-nucleus polygon geometries produced by NuClick
+    type:
+      id: array
+      subtype:
+        id: geometry
