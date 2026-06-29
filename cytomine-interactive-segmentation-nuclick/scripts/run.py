@@ -55,19 +55,22 @@ def write_array(array_path: str, array_data: Iterable[Any], format_fn: Callable[
             file.write(format_fn(data_item))
 
 
-def read_click_points(path: str):
-    """Read the single GeoJSON geometry input and return its click points.
+def read_point_array(array_path: str):
+    """Read an App Engine geometry-array input of indexed GeoJSON Point items.
 
-    Accepts a Point (one click) or MultiPoint (several); coordinates are in
-    Cytomine space (bottom-left origin).
+    Items are files named 0, 1, 2, ...; returns a list of (x, y) in Cytomine
+    space (bottom-left origin). The item files are counted directly rather than
+    trusting array.yml, which the platform may leave at `size: 0`.
     """
-    with open(path, "r", encoding="utf8") as file:
-        geom = geojson.loads(file.read())
-    if geom["type"] == "Point":
-        return [tuple(map(float, geom["coordinates"]))]
-    if geom["type"] == "MultiPoint":
-        return [tuple(map(float, c)) for c in geom["coordinates"]]
-    raise ValueError(f"Expected Point or MultiPoint geometry, got {geom['type']}")
+    indices = sorted(int(f) for f in os.listdir(array_path) if f.isdigit())
+    points = []
+    for i in indices:
+        with open(os.path.join(array_path, str(i)), "r", encoding="utf8") as file:
+            geom = geojson.loads(file.read())
+        if geom["type"] != "Point":
+            raise ValueError(f"Expected Point geometry, got {geom['type']}")
+        points.append(tuple(map(float, geom["coordinates"])))
+    return points
 
 
 def to_geojson_polygon_string(poly_coords):
@@ -153,7 +156,7 @@ def main():
     image_height, image_width = image.shape[:2]
     logger.info(f"Input image: shape={image.shape}, dtype={image.dtype}")
 
-    points_cyt = read_click_points(os.path.join(INPUT_DIR, "point"))
+    points_cyt = read_point_array(os.path.join(INPUT_DIR, "points"))
     logger.info(f"Number of click points: {len(points_cyt)}")
 
     # Cytomine bottom-left origin -> image top-left origin, snapped to int pixels.

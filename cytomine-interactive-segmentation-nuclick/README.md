@@ -2,7 +2,7 @@
 
 [Cytomine](https://cytomine.org) app for interactive nucleus segmentation, developed by the [TIA Centre](https://warwick.ac.uk/fac/cross_fac/tia/).
 
-The app applies NuClick via [TIAToolbox](https://github.com/TissueImageAnalytics/tiatoolbox), using the `nuclick_light-pannuke` checkpoint (a lightweight UNet variant trained on the [PanNuke dataset](https://jgamper.github.io/PanNukeDataset/)). Given a point click on a nucleus, it returns a polygon geometry outlining that nucleus. The input is a single `Point` (one nucleus per run).
+The app applies NuClick via [TIAToolbox](https://github.com/TissueImageAnalytics/tiatoolbox), using the `nuclick_light-pannuke` checkpoint (a lightweight UNet variant trained on the [PanNuke dataset](https://jgamper.github.io/PanNukeDataset/)). Given point clicks on nuclei (one `Point` per nucleus), it returns a polygon geometry outlining each clicked nucleus.
 
 ## Reference
 
