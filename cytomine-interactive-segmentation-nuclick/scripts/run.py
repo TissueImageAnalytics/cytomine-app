@@ -56,15 +56,15 @@ def write_array(array_path: str, array_data: Iterable[Any], format_fn: Callable[
 
 
 def read_point_array(array_path: str):
-    """Read an App Engine geometry-array input of indexed GeoJSON Point items.
+    """Read an App Engine geometry-array input: array.yml + indexed GeoJSON items.
 
-    Items are files named 0, 1, 2, ...; returns a list of (x, y) in Cytomine
-    space (bottom-left origin). The item files are counted directly rather than
-    trusting array.yml, which the platform may leave at `size: 0`.
+    Each item is a Point; returns a list of (x, y) in Cytomine space (bottom-left
+    origin).
     """
-    indices = sorted(int(f) for f in os.listdir(array_path) if f.isdigit())
+    with open(os.path.join(array_path, "array.yml"), "r", encoding="utf8") as file:
+        n = yaml.safe_load(file)["size"]
     points = []
-    for i in indices:
+    for i in range(n):
         with open(os.path.join(array_path, str(i)), "r", encoding="utf8") as file:
             geom = geojson.loads(file.read())
         if geom["type"] != "Point":

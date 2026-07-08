@@ -3,7 +3,7 @@
 # Keep VERSION in sync with `version` and `configuration.image.file` in descriptor.yml.
 set -euo pipefail
 
-VERSION="0.1.5"
+VERSION="0.1.6"
 NAMESPACE="com.cytomine.nuclei.segmentation.interactive.nuclick"
 
 IMAGE="${NAMESPACE//.//}:${VERSION}"   # slash form, e.g. com/cytomine/.../nuclick:0.1.0

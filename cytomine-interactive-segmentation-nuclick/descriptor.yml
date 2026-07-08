@@ -1,6 +1,6 @@
 name: NuClick Nuclei Segmentation
 name_short: nuclick
-version: 0.1.5
+version: 0.1.6
 namespace: com.cytomine.nuclei.segmentation.interactive.nuclick
 $schema: https://raw.githubusercontent.com/cytomine/cytomine/refs/heads/main/app-engine/src/main/resources/schemas/tasks/task.v0.json
 
@@ -20,7 +20,7 @@ configuration:
   input_folder: /inputs
   output_folder: /outputs
   image:
-    file: /com.cytomine.nuclei.segmentation.interactive.nuclick-0.1.5.tar
+    file: /com.cytomine.nuclei.segmentation.interactive.nuclick-0.1.6.tar
   resources:
     ram: 8Gi
     cpus: 2
